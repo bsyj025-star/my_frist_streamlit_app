@@ -146,4 +146,5 @@ with st.sidebar:
 
     # 현재 API 키 표시 (마스킹 처리)
     st.markdown("---")
-    st.markdown("**API 키 상태**: 설정됨 (마지막 4자리: `****" + api_key[-4:] + "`")")
+    st.markdown("**API 키 상태**: 설정됨 (마지막 4자리: `****" + api_key[-4:] + "`")
+
