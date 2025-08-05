@@ -85,32 +85,27 @@ if prompt:
 
     # 챗봇 응답 생성
     with st.chat_message("assistant"):
-        response_placeholder = st.empty()
-        full_response = ""
-
         try:
             # 시스템 메시지 제외한 대화 기록 전달
             conversation = [msg for msg in st.session_state.chat_history if msg["role"] != "system"]
-
-            for chunk in client.chat.completions.create(
+    
+            # 스트리밍 응답을 위한 컨테이너 생성
+            stream = client.chat.completions.create(
                 model="solar-pro2",
                 messages=conversation,
                 stream=True,
-            ):
-                delta = chunk.choices[0].delta.get('content', '')
-                full_response += delta
-                response_placeholder.markdown(full_response + "▌")
-
-            # 최종 응답 표시
-            response_placeholder.markdown(full_response)
-            st.markdown(f"<small style='color:gray;'>{datetime.now().strftime('%H:%M')}</small>", unsafe_allow_html=True)
-
-            # 대화 기록 저장
-            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
-
+            )
+    
+            # st.write_stream으로 스트리밍 응답을 부드럽게 출력
+            response = st.write_stream(stream)
+    
+            # 전체 응답을 대화 기록에 추가
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
+    
         except Exception as e:
             st.error(f"오류가 발생했습니다: {e}")
             st.session_state.chat_history.append({"role": "assistant", "content": "미안, 지금은 답변하기가 어렵네. 잠시 후 다시 시도해볼래?"})
+
 
 # 사이드바
 with st.sidebar:
@@ -147,4 +142,5 @@ with st.sidebar:
     # 현재 API 키 표시 (마스킹 처리)
     st.markdown("---")
     st.markdown("**API 키 상태**: 설정됨 (마지막 4자리: `****" + api_key[-4:] + "`")
+
 
